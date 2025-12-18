@@ -1,0 +1,4 @@
+/charlie/.env
+/charlie/secrets.json 
+*.ddb
+*.ddb.wal
