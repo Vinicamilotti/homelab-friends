@@ -6,12 +6,22 @@ import (
 	friendsRepository "github.com/Vinicamilotti/charlie/cmd/friends/outbounds"
 	"github.com/Vinicamilotti/charlie/cmd/shared/api"
 	"github.com/Vinicamilotti/charlie/cmd/shared/store"
+	"github.com/Vinicamilotti/charlie/secrets"
 	"github.com/joho/godotenv"
 )
 
-func main() {
+func bootstrap() {
 	godotenv.Load()
 	store.InitializeDatabase()
+	err := secrets.LoadScrets()
+	if err != nil {
+		panic(err)
+	}
+
+}
+
+func main() {
+	bootstrap()
 	friendsFacade := friendsFacade.NewFriendsFacade(*friendsRepository.NewFriendsRepository())
 	friendsHandler := friendsHandler.NewFriendsHandler(friendsFacade)
 

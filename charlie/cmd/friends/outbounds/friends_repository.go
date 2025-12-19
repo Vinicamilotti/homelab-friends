@@ -63,17 +63,18 @@ func (r *FriendsRepository) AddFriendInvitation(invitation domain.FriendRequest)
 	defer db.Close()
 	helper := store.NewDBHelper(db)
 	err := helper.Insert("friend_requests", map[string]any{
-		"id":      invitation.Id,
-		"dns":     invitation.Dns,
-		"name":    invitation.Name,
-		"message": invitation.Message,
-		"status":  domain.StatusPending,
+		"id":         invitation.Id,
+		"dns":        invitation.Dns,
+		"name":       invitation.Name,
+		"message":    invitation.Message,
+		"friend_key": invitation.FriendKey,
+		"status":     domain.StatusPending,
 	})
 	return err
 }
 
 func (r *FriendsRepository) GetFriendInvitations(req domain.FriendRequest) ([]domain.FriendRequest, error) {
-	sql := "SELECT id, name, message, status FROM friend_requests WHERE 1=1"
+	sql := "SELECT id, name, dns, message, status, friend_key FROM friend_requests WHERE 1=1"
 	conn := store.NewSqliteConn()
 	params := []interface{}{}
 	if req.Status != "" {
@@ -102,7 +103,7 @@ func (r *FriendsRepository) GetFriendInvitations(req domain.FriendRequest) ([]do
 	invitations := []domain.FriendRequest{}
 	for rows.Next() {
 		var invitation domain.FriendRequest
-		err := rows.Scan(&invitation.Id, &invitation.Dns, &invitation.Name, &invitation.Message, &invitation.Status)
+		err := rows.Scan(&invitation.Id, &invitation.Name, &invitation.Dns, &invitation.Message, &invitation.Status, &invitation.FriendKey)
 		if err != nil {
 			return []domain.FriendRequest{}, err
 		}

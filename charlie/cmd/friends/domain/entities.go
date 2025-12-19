@@ -7,19 +7,21 @@ const (
 )
 
 type FriendRequest struct {
-	Id      string `json:"id,omitempty"`
-	Dns     string `json:"dns"`
-	Name    string `json:"name"`
-	Message string `json:"message"`
-	Status  string `json:"status,omitempty"`
+	Id        string `json:"id,omitempty"`
+	Dns       string `json:"dns"`
+	Name      string `json:"name"`
+	Message   string `json:"message"`
+	FriendKey string `json:"friend_key"`
+	Status    string `json:"status,omitempty"`
 }
 
 type Friend struct {
-	Id   string `json:"id"`
-	Dns  string `json:"dns"`
-	Name string `json:"name"`
+	Id        string `json:"id"`
+	Dns       string `json:"dns"`
+	Name      string `json:"name"`
+	FriendKey string `json:"friend_key"`
 }
 
-type FriendResquestRecived struct {
+type FriendRequestRecived struct {
 	MyNameIs string `json:"my_name_is"`
 }

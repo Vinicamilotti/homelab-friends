@@ -7,6 +7,7 @@ import (
 	"github.com/Vinicamilotti/charlie/cmd/friends/application"
 	"github.com/Vinicamilotti/charlie/cmd/friends/domain"
 	"github.com/Vinicamilotti/charlie/cmd/shared/lib"
+	"github.com/Vinicamilotti/charlie/cmd/shared/middleware"
 	"github.com/gin-gonic/gin"
 )
 
@@ -55,16 +56,25 @@ func (h *FriendsHandler) InviteMe(c *gin.Context) {
 		return
 	}
 
-	resp := domain.FriendResquestRecived{
+	resp := domain.FriendRequestRecived{
 		MyNameIs: os.Getenv("MY_NAME"),
 	}
 
 	c.JSON(200, resp)
 }
 
-func (h *FriendsHandler) RegisterRoutes(app *gin.Engine) {
-	app.GET("/friends", h.GetFriends)
-	app.POST("/friends/invite", h.SendFriendInvitation)
-	app.POST("/friends/request", h.InviteMe)
+func (h *FriendsHandler) GetFriendRequests(c *gin.Context) {
+	friendRequests, err := h.FriendsFacade.GetFriendInvitations()
+	if err != nil {
+		c.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(200, friendRequests)
+}
 
+func (h *FriendsHandler) RegisterRoutes(app *gin.Engine) {
+	app.GET("/friends", middleware.AuthOwner, h.GetFriends)
+	app.POST("/friends/invite", middleware.AuthOwner, h.SendFriendInvitation)
+	app.POST("/friends/request", h.InviteMe)
+	app.GET("/friends/request", middleware.AuthOwner, h.GetFriendRequests)
 }

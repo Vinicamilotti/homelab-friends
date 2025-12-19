@@ -56,7 +56,7 @@ func (f *FriendsFacade) SendFriendInvitation(friendURL string, message string) e
 	if res.StatusCode != http.StatusOK {
 		return fmt.Errorf("failed to send friend invitation, status code: %d", res.StatusCode)
 	}
-	var friendReqRecived domain.FriendResquestRecived
+	var friendReqRecived domain.FriendRequestRecived
 	resBody, err := io.ReadAll(res.Body)
 	if err != nil {
 		return err
