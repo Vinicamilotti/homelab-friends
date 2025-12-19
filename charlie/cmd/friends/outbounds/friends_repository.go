@@ -3,20 +3,19 @@ package outbounds
 import (
 	"github.com/Vinicamilotti/charlie/cmd/friends/domain"
 	"github.com/Vinicamilotti/charlie/cmd/shared/store"
-	"github.com/google/uuid"
 )
 
 type FriendsRepository struct {
-	Store store.SqliteConn
 }
 
-func NewFriendsRepository(store store.SqliteConn) *FriendsRepository {
-	return &FriendsRepository{Store: store}
+func NewFriendsRepository() *FriendsRepository {
+	return &FriendsRepository{}
 }
 
 func (r *FriendsRepository) GetFriend(dns string) (domain.Friend, error) {
+	conn := store.NewSqliteConn()
 	sql := "SELECT id, dns, name FROM friends WHERE dns = ?"
-	row, err := r.Store.DB().Query(sql, dns)
+	row, err := conn.DB().Query(sql, dns)
 	if err != nil {
 		return domain.Friend{}, err
 	}
@@ -34,8 +33,11 @@ func (r *FriendsRepository) GetFriend(dns string) (domain.Friend, error) {
 }
 
 func (r *FriendsRepository) GetFriends() ([]domain.Friend, error) {
+	conn := store.NewSqliteConn()
 	sql := "SELECT id, dns, name FROM friends"
-	rows, err := r.Store.DB().Query(sql)
+	db := conn.DB()
+	defer db.Close()
+	rows, err := db.Query(sql)
 
 	if err != nil {
 		return []domain.Friend{}, err
@@ -56,14 +58,23 @@ func (r *FriendsRepository) GetFriends() ([]domain.Friend, error) {
 }
 
 func (r *FriendsRepository) AddFriendInvitation(invitation domain.FriendRequest) error {
-	sql := "INSERT INTO friend_requests (id, name, dns, status) VALUES (?, ?, ?, ?)"
-	_, err := r.Store.DB().Exec(sql, uuid.New().String(), invitation.Dns, invitation.Name, invitation.Status)
+	conn := store.NewSqliteConn()
+	db := conn.DB()
+	defer db.Close()
+	helper := store.NewDBHelper(db)
+	err := helper.Insert("friend_requests", map[string]any{
+		"id":      invitation.Id,
+		"dns":     invitation.Dns,
+		"name":    invitation.Name,
+		"message": invitation.Message,
+		"status":  domain.StatusPending,
+	})
 	return err
 }
 
 func (r *FriendsRepository) GetFriendInvitations(req domain.FriendRequest) ([]domain.FriendRequest, error) {
 	sql := "SELECT id, name, message, status FROM friend_requests WHERE 1=1"
-
+	conn := store.NewSqliteConn()
 	params := []interface{}{}
 	if req.Status != "" {
 		sql += " AND status = ?"
@@ -79,8 +90,9 @@ func (r *FriendsRepository) GetFriendInvitations(req domain.FriendRequest) ([]do
 		sql += " AND id = ?"
 		params = append(params, req.Id)
 	}
-
-	rows, err := r.Store.DB().Query(sql, params...)
+	db := conn.DB()
+	defer db.Close()
+	rows, err := db.Query(sql, params...)
 
 	if err != nil {
 		return []domain.FriendRequest{}, err
@@ -100,14 +112,17 @@ func (r *FriendsRepository) GetFriendInvitations(req domain.FriendRequest) ([]do
 }
 
 func (r *FriendsRepository) AcceptFriendInvitation(dns string) error {
+	conn := store.NewSqliteConn()
+	db := conn.DB()
+	defer db.Close()
 	sql := "UPDATE friend_requests SET status = ? WHERE dns = ?"
-	_, err := r.Store.DB().Exec(sql, domain.StatusAccepted, dns)
+	_, err := db.Exec(sql, domain.StatusAccepted, dns)
 
 	if err != nil {
 		return err
 	}
 
 	sql = "INSERT INTO friends (id, dns, name) SELECT id, dns, name FROM friend_requests WHERE dns = ?"
-	_, err = r.Store.DB().Exec(sql, dns)
+	_, err = db.Exec(sql, dns)
 	return err
 }

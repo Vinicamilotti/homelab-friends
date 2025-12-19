@@ -81,19 +81,19 @@ func (f *FriendsFacade) GetFriendInvitations() ([]domain.FriendRequest, error) {
 }
 
 func (f *FriendsFacade) ReciveFriendInvitation(req domain.FriendRequest) error {
+
+	if sentResquet, err := f.FriendsRepository.GetFriendInvitations(domain.FriendRequest{
+		Dns:    req.Dns,
+		Status: domain.StatusSent}); err == nil && len(sentResquet) > 0 {
+		// auto accept friend request if we have sent one to this dns
+		return f.FriendsRepository.AcceptFriendInvitation(req.Dns)
+	}
 	err := f.FriendsRepository.AddFriendInvitation(domain.FriendRequest{
 		Id:     uuid.NewString(),
 		Dns:    req.Dns,
 		Name:   req.Name,
 		Status: domain.StatusPending,
 	})
-
-	if sentResquet, err := f.FriendsRepository.GetFriendInvitations(domain.FriendRequest{
-		Dns:    req.Dns,
-		Status: domain.StatusSent}); err == nil && len(sentResquet) > 0 {
-		// auto accept friend request if we have sent one to this dns
-		err = f.FriendsRepository.AcceptFriendInvitation(req.Dns)
-	}
 
 	return err
 }

@@ -2,6 +2,7 @@ package inbounds
 
 import (
 	"io"
+	"os"
 
 	"github.com/Vinicamilotti/charlie/cmd/friends/application"
 	"github.com/Vinicamilotti/charlie/cmd/friends/domain"
@@ -41,8 +42,29 @@ func (h *FriendsHandler) SendFriendInvitation(c *gin.Context) {
 	c.JSON(200, gin.H{"message": "Friend invitation sent successfully"})
 }
 
+func (h *FriendsHandler) InviteMe(c *gin.Context) {
+	var body io.Reader = c.Request.Body
+	invitationRequest, err := lib.ReadBody[domain.FriendRequest](body)
+	if err != nil {
+		c.JSON(400, gin.H{"error": "Invalid friend request body"})
+		return
+	}
+	err = h.FriendsFacade.ReciveFriendInvitation(invitationRequest)
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
+	resp := domain.FriendResquestRecived{
+		MyNameIs: os.Getenv("MY_NAME"),
+	}
+
+	c.JSON(200, resp)
+}
+
 func (h *FriendsHandler) RegisterRoutes(app *gin.Engine) {
 	app.GET("/friends", h.GetFriends)
 	app.POST("/friends/invite", h.SendFriendInvitation)
+	app.POST("/friends/request", h.InviteMe)
 
 }

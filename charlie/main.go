@@ -12,7 +12,7 @@ import (
 func main() {
 	godotenv.Load()
 	store.InitializeDatabase()
-	friendsFacade := friendsFacade.NewFriendsFacade(*friendsRepository.NewFriendsRepository(store.NewSqliteConn()))
+	friendsFacade := friendsFacade.NewFriendsFacade(*friendsRepository.NewFriendsRepository())
 	friendsHandler := friendsHandler.NewFriendsHandler(friendsFacade)
 
 	api := api.NewApi("0.0.0.0", 8000)
