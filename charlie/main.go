@@ -25,7 +25,7 @@ func main() {
 	friendsFacade := friendsFacade.NewFriendsFacade(*friendsRepository.NewFriendsRepository())
 	friendsHandler := friendsHandler.NewFriendsHandler(friendsFacade)
 
-	api := api.NewApi("0.0.0.0", 8000)
+	api := api.NewApi()
 
 	api.AddHandler(friendsHandler)
 	api.Start()

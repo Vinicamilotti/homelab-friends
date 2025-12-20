@@ -2,6 +2,7 @@ package secrets
 
 import (
 	"encoding/json"
+	"log"
 	"os"
 
 	"github.com/google/uuid"
@@ -17,27 +18,32 @@ var secrets Secrets
 func LoadScrets() error {
 	file, err := os.ReadFile("secrets.json")
 	if err != nil {
-		panic(err)
+		log.Print("Secrets file not found. Creating ...")
+		return EnsureSecretsFile(true)
 	}
 
 	err = json.Unmarshal(file, &secrets)
+	if err != nil {
+		log.Print("Malformed secrets file, recreating ...")
+		return EnsureSecretsFile(true)
+	}
 
 	return EnsureSecretsFile(false)
 
 }
 
-func EnsureSecretsFile(recreate bool) error {
+func EnsureSecretsFile(newFile bool) error {
 
-	if secrets.AuthHash == "" || recreate {
+	if secrets.AuthHash == "" || newFile {
 		secrets.AuthHash = uuid.NewString()
 	}
 
-	if secrets.PublicHash == "" || recreate {
+	if secrets.PublicHash == "" || newFile {
 		secrets.PublicHash = uuid.NewString()
 	}
 
 	err := os.Remove("./secrets.json")
-	if err != nil {
+	if err != nil && !newFile {
 		return err
 	}
 

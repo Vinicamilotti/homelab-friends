@@ -2,6 +2,9 @@ package api
 
 import (
 	"fmt"
+	"log"
+	"os"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -17,12 +20,19 @@ type Api struct {
 	Listen   string
 }
 
-func NewApi(listen string, port int) *Api {
+func NewApi() *Api {
+	port, err := strconv.Atoi(os.Getenv("PORT"))
+
+	if err != nil || port > 65535 {
+		log.Printf("invalid PORT eviroment variable: '%s', using default 8082", os.Getenv("PORT"))
+		port = 8082
+	}
+
 	return &Api{
 		Gin:      gin.Default(),
 		Handlers: []ApiHandlers{},
 		Port:     port,
-		Listen:   listen,
+		Listen:   os.Getenv("HOST"),
 	}
 }
 
