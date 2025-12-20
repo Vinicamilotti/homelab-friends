@@ -36,6 +36,7 @@ func EnsureSecretsFile(newFile bool) error {
 
 	if secrets.AuthHash == "" || newFile {
 		secrets.AuthHash = uuid.NewString()
+		log.Printf("[NEW AUTH TOKEN] THIS IS YOUR NEW AUTH TOKEN: %s", secrets.AuthHash)
 	}
 
 	if secrets.PublicHash == "" || newFile {
