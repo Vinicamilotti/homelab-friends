@@ -35,7 +35,7 @@ func (h *FriendsHandler) SendFriendInvitation(c *gin.Context) {
 		c.JSON(400, gin.H{"error": "Invalid friend request body"})
 		return
 	}
-	err = h.FriendsFacade.SendFriendInvitation(invitationRequest.Dns, invitationRequest.Message)
+	err = h.FriendsFacade.SendFriendInvitation(invitationRequest.Dns, invitationRequest.RequestMessage)
 	if err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return

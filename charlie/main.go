@@ -5,8 +5,8 @@ import (
 	friendsHandler "github.com/Vinicamilotti/charlie/cmd/friends/inbounds"
 	friendsRepository "github.com/Vinicamilotti/charlie/cmd/friends/outbounds"
 	"github.com/Vinicamilotti/charlie/cmd/shared/api"
-	"github.com/Vinicamilotti/charlie/cmd/shared/store"
 	"github.com/Vinicamilotti/charlie/secrets"
+	"github.com/Vinicamilotti/charlie/store"
 	"github.com/joho/godotenv"
 )
 

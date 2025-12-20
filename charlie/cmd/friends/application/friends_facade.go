@@ -37,9 +37,9 @@ func (f *FriendsFacade) SendFriendInvitation(friendURL string, message string) e
 	friendUrl := fmt.Sprintf("%s/friends/request", friendURL)
 
 	req := domain.FriendRequest{
-		Dns:     os.Getenv("MY_DNS"),
-		Name:    os.Getenv("MY_NAME"),
-		Message: message,
+		Dns:            os.Getenv("MY_DNS"),
+		FriendName:     os.Getenv("MY_NAME"),
+		RequestMessage: message,
 	}
 
 	body, err := json.Marshal(req)
@@ -67,32 +67,47 @@ func (f *FriendsFacade) SendFriendInvitation(friendURL string, message string) e
 
 	friendName := friendReqRecived.MyNameIs
 	return f.FriendsRepository.AddFriendInvitation(domain.FriendRequest{
-		Dns:     friendUrl,
-		Name:    friendName,
-		Message: message,
-		Status:  domain.StatusSent,
+		Dns:            friendUrl,
+		FriendName:     friendName,
+		RequestMessage: message,
+		RequestStatus:  domain.StatusSent,
 	})
 }
 
 func (f *FriendsFacade) GetFriendInvitations() ([]domain.FriendRequest, error) {
 	return f.FriendsRepository.GetFriendInvitations(domain.FriendRequest{
-		Status: domain.StatusPending,
+		RequestStatus: domain.StatusPending,
 	})
+}
+
+func (f *FriendsFacade) AcceptFriendInvitation(invitation string) error {
+	req, err := f.FriendsRepository.GetFriendInvitation(invitation)
+	if err != nil {
+		return err
+	}
+
+	err = f.FriendsRepository.AddFriendInvitation(req)
+	if err != nil {
+		return err
+	}
+
+	return f.SendFriendInvitation(req.Dns, "accepted")
+
 }
 
 func (f *FriendsFacade) ReciveFriendInvitation(req domain.FriendRequest) error {
 
 	if sentResquet, err := f.FriendsRepository.GetFriendInvitations(domain.FriendRequest{
-		Dns:    req.Dns,
-		Status: domain.StatusSent}); err == nil && len(sentResquet) > 0 {
+		Dns:           req.Dns,
+		RequestStatus: domain.StatusSent}); err == nil && len(sentResquet) > 0 {
 		// auto accept friend request if we have sent one to this dns
 		return f.FriendsRepository.AcceptFriendInvitation(req.Dns)
 	}
 	err := f.FriendsRepository.AddFriendInvitation(domain.FriendRequest{
-		Id:     uuid.NewString(),
-		Dns:    req.Dns,
-		Name:   req.Name,
-		Status: domain.StatusPending,
+		Id:            uuid.NewString(),
+		Dns:           req.Dns,
+		FriendName:    req.FriendName,
+		RequestStatus: domain.StatusPending,
 	})
 
 	return err
