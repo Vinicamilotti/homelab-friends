@@ -10,6 +10,7 @@ import (
 
 	"github.com/Vinicamilotti/charlie/cmd/friends/domain"
 	"github.com/Vinicamilotti/charlie/cmd/friends/outbounds"
+	"github.com/Vinicamilotti/charlie/secrets"
 	"github.com/google/uuid"
 )
 
@@ -39,6 +40,7 @@ func (f *FriendsFacade) SendFriendInvitation(friendURL string, message string) e
 	req := domain.FriendRequest{
 		Dns:            os.Getenv("MY_DNS"),
 		FriendName:     os.Getenv("MY_NAME"),
+		FriendKey:      secrets.GetSecrets().PublicHash,
 		RequestMessage: message,
 	}
 
