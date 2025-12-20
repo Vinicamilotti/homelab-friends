@@ -19,7 +19,7 @@ func LoadScrets() error {
 
 	secrets = GetSecrets()
 
-	err = json.Unmarshal(file, secrets)
+	err = json.Unmarshal(file, &secrets)
 	return err
 
 }
